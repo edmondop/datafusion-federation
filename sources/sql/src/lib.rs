@@ -779,7 +779,12 @@ mod tests {
         public_schema
             .register_table("app_table".to_string(), get_test_table_provider())
             .expect("to register table");
-
+        public_schema
+            .register_table("customer".to_string(), get_test_table_provider())
+            .expect("to register table");
+        public_schema
+            .register_table("orders".to_string(), get_test_table_provider())
+            .expect("to register table");
         ctx
     }
 
@@ -891,6 +896,45 @@ mod tests {
             test_sql(&ctx, test.0, test.1).await?;
         }
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_rewrite_table_ql13() -> Result<()> {
+        init_tracing();
+        let ctx = get_test_df_context();
+
+        let sql_query =
+            
+                "select
+    c_count,
+    count(*) as custdist
+from
+    (
+        select
+            c_custkey,
+            count(o_orderkey)
+        from
+            customer left outer join orders on
+                        c_custkey = o_custkey
+                    and o_comment not like '%special%requests%'
+        group by
+            c_custkey
+    ) as c_orders (c_custkey, c_count)
+group by
+    c_count
+order by
+    custdist desc,
+    c_count desc";
+        let data_frame = ctx.sql(sql_query).await;
+        println!("data_frame: \n{:#?}", data_frame);
+        let data_frame = data_frame?;
+        let mut known_rewrites = HashMap::new();
+        let rewritten_plan = rewrite_table_scans(data_frame.logical_plan(), &mut known_rewrites)?;
+
+        println!("rewritten_plan: \n{:#?}", rewritten_plan);
+
+        let unparsed_sql = plan_to_sql(&rewritten_plan)?;
         Ok(())
     }
 
