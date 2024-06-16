@@ -10,16 +10,19 @@ members = [
 
 [patch.crates-io]
 # connectorx = { path = "../connector-x/connectorx" }
-# datafusion = { path = "../arrow-datafusion/datafusion/core" }
+datafusion = { path = "../arrow-datafusion/datafusion/core" }
 
 [workspace.package]
 version = "0.1.3"
 edition = "2021"
-license = "MIT"
+license = "Apache-2.0"
 readme = "README.md"
 
 
 [workspace.dependencies]
 async-trait = "0.1.77"
-datafusion = "37.0.0"
-datafusion-substrait = "37.0.0"
+async-stream = "0.3.5"
+futures = "0.3.30"
+# datafusion = { git = "https://github.com/spiceai/datafusion.git", rev = "be2c2c1f74823956e609a23ca38657cd76c2fcfe" }
+datafusion-substrait = { git = "https://github.com/spiceai/datafusion.git", folder = "datafusion/substrait", rev = "be2c2c1f74823956e609a23ca38657cd76c2fcfe" }
+datafusion = { path = "../arrow-datafusion/datafusion/core" }
